@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <iostream>
 
-template <size_t N, typename T> class small_bitset {
+template <int N, typename T> class small_bitset {
 private:
   T val_{0};
 
@@ -23,6 +23,9 @@ public:
     return *this;
   }
   constexpr auto operator~() const noexcept { return small_bitset{~val_}; }
+  constexpr auto
+  operator<=>(small_bitset const &other) const noexcept = default;
+  constexpr bool operator==(small_bitset const &other) const noexcept = default;
   constexpr auto &set() noexcept {
     val_ = ~T{0};
     return *this;

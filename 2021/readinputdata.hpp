@@ -7,8 +7,8 @@
 
 template <typename T> auto readinputdata(std::istream &&is) {
   auto data{std::vector<T>{}};
-  std::copy(std::istream_iterator<T>{is}, std::istream_iterator<T>{},
-            back_inserter(data));
+  copy(std::istream_iterator<T>{is}, std::istream_iterator<T>{},
+       back_inserter(data));
   return data;
 }
 

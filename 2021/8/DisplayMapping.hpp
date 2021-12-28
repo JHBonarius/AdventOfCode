@@ -2,8 +2,9 @@
 #define DISPLAYMAPPING_H
 #include "Display.hpp"
 #include <algorithm>
-#include <array>
-//#include <vector>
+#include <initializer_list>
+#include <iterator>
+#include <ostream>
 
 class DisplayMapping {
 private:
@@ -18,15 +19,23 @@ public:
   }
 
   // exclude could be derived from only, but lets not do that for simplicity
-  template <size_t N1, size_t N2>
-  constexpr void setFrom(Display const val, std::array<int, N1> const only,
-                         std::array<int, N2> const exclude) noexcept {
+  constexpr void setFrom(Display const val,
+                         std::initializer_list<int> const only,
+                         std::initializer_list<int> const exclude) noexcept {
     for (int o : only) {
       mapping[o] &= val;
     }
     for (int e : exclude) {
       mapping[e] &= ~val;
     }
+  }
+
+  constexpr auto applyTo(Display d) const noexcept { return 0; }
+
+  friend auto &operator<<(std::ostream &os, DisplayMapping const &dm) {
+    std::copy(cbegin(dm.mapping), cend(dm.mapping),
+              std::ostream_iterator<Display>{os, ", "});
+    return os;
   }
 };
 

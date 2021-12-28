@@ -1,5 +1,6 @@
 #include "../readinputdata.hpp"
 #include "Display.hpp"
+#include "DisplayResolver.hpp"
 #include "Observation.hpp"
 #include <algorithm>
 #include <array>
@@ -19,9 +20,7 @@ template <size_t N>
 constexpr auto StringObservationsToDisplayObservations(
     std::array<std::string, N> strArr) noexcept {
   auto retVal{std::array<Display, N>{}};
-  std::transform(cbegin(strArr), cend(strArr), begin(retVal),
-                 letters_to_Display);
-  //[](std::string const &str) { return letters_to_Display(str); });
+  transform(cbegin(strArr), cend(strArr), begin(retVal), letters_to_Display);
   return retVal;
 }
 
@@ -67,18 +66,21 @@ int main() {
   auto const binaryObservations = [&]() {
     auto binaryObservations{std::vector<BinaryObservation>{}};
     binaryObservations.reserve(size(observations));
-    std::transform(
-        cbegin(observations), cend(observations),
-        back_inserter(binaryObservations), [](StringObservation const &obs) {
-          return BinaryObservation{
-              StringObservationsToDisplayObservations(obs.uniquePattern),
-              StringObservationsToDisplayObservations(obs.digits)};
-        });
+    transform(cbegin(observations), cend(observations),
+              back_inserter(binaryObservations),
+              [](StringObservation const &obs) {
+                return BinaryObservation{
+                    StringObservationsToDisplayObservations(obs.uniquePattern),
+                    StringObservationsToDisplayObservations(obs.digits)};
+              });
     return binaryObservations;
   }();
 
   copy(cbegin(binaryObservations), cend(binaryObservations),
        std::ostream_iterator<BinaryObservation>(std::cout, "\n"));
+
+  auto const displayResolver{DisplayResolver{binaryObservations[0]}};
+  displayResolver.resolve_mapping();
 
   // auto const displayValues = [&]() {
   //   auto displayValues{std::vector<int>{}};
