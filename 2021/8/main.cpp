@@ -1,3 +1,4 @@
+#include "../my_algorithm.hpp"
 #include "../readinputdata.hpp"
 #include "Display.hpp"
 #include "DisplayResolver.hpp"
@@ -24,12 +25,12 @@ constexpr auto StringObservationsToDisplayObservations(
   return retVal;
 }
 
-// static const auto decoder = []() {
-//   auto decoder{std::map<Display, int>{}};
-//   return decoder;
-// }();
+static constexpr auto testData1 =
+    // clang-format off
+  "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf\n";
+// clang-format on
 
-static constexpr auto testData =
+static constexpr auto testData2 =
     // clang-format off
   "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe\n"
   "edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc\n"
@@ -45,10 +46,10 @@ static constexpr auto testData =
 
 int main() {
   auto const observations{readinputdata<StringObservation>(
-      std::stringstream{testData} /*std::ifstream{"input"}*/)};
+      /*std::stringstream{testData2}*/ std::ifstream{"input"})};
 
-  copy(cbegin(observations), cend(observations),
-       std::ostream_iterator<StringObservation>(std::cout, "\n"));
+  // copy(cbegin(observations), cend(observations),
+  //      std::ostream_iterator<StringObservation>(std::cout, "\n"));
 
   auto const amountHasLength1478{transform_reduce(
       cbegin(observations), cend(observations), 0, std::plus<>{},
@@ -56,8 +57,8 @@ int main() {
         return count_if(cbegin(obs.digits), cend(obs.digits),
                         [](std::string const &str) {
                           auto const strLen = size(str);
-                          return strLen == 2 /*1*/ || strLen == 3 /*7*/ ||
-                                 strLen == 4 /*4*/ || strLen == 7 /*8*/;
+                          return is_any_value_out_of<size_t>(
+                              strLen, {2 /*1*/, 3 /*7*/, 4 /*4*/, 7 /*8*/});
                         });
       })};
   std::cout << "Amount of digits with length 1, 4, 7 or 8: "
@@ -76,21 +77,27 @@ int main() {
     return binaryObservations;
   }();
 
-  copy(cbegin(binaryObservations), cend(binaryObservations),
-       std::ostream_iterator<BinaryObservation>(std::cout, "\n"));
+  // copy(cbegin(binaryObservations), cend(binaryObservations),
+  //      std::ostream_iterator<BinaryObservation>(std::cout, "\n"));
 
-  auto const displayResolver{DisplayResolver{binaryObservations[0]}};
-  displayResolver.resolve_mapping();
+  // auto const displayResolver{DisplayResolver{binaryObservations[0]}};
+  // auto const mapping{displayResolver.resolve_mapping()};
+  // std::cout << displayResolver.applyTo(mapping) << std::endl;
 
-  // auto const displayValues = [&]() {
-  //   auto displayValues{std::vector<int>{}};
-  //   displayValues.reserve(size(binaryObservations));
-  //   std::transform(cbegin(binaryObservations), cend(binaryObservations),
-  //                  back_inserter(displayValues),
-  //                  [](BinaryObservation const &bo) {
-  //                    auto const mapping = resolve_mapping(bo.uniquePattern);
-  //                    return mapping.applyTo(bo.digits);
-  //                  });
-  //   return displayValues;
-  // }();
+  auto const displayValues = [&]() {
+    auto displayValues{std::vector<int>{}};
+    displayValues.reserve(size(binaryObservations));
+    std::transform(cbegin(binaryObservations), cend(binaryObservations),
+                   back_inserter(displayValues),
+                   [](BinaryObservation const &bo) {
+                     auto const displayResolver{DisplayResolver{bo}};
+                     auto const mapping = displayResolver.resolve_mapping();
+                     return displayResolver.applyTo(mapping);
+                   });
+    return displayValues;
+  }();
+
+  auto const result = std::reduce(cbegin(displayValues), cend(displayValues));
+
+  std::cout << result << std::endl;
 }

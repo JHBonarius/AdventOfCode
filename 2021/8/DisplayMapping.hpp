@@ -1,9 +1,12 @@
-#ifndef DISPLAYMAPPING_H
-#define DISPLAYMAPPING_H
+#ifndef DISPLAYMAPPING_HPP
+#define DISPLAYMAPPING_HPP
 #include "Display.hpp"
 #include <algorithm>
+#include <functional>
 #include <initializer_list>
+#include <iostream>
 #include <iterator>
+#include <numeric>
 #include <ostream>
 
 class DisplayMapping {
@@ -11,26 +14,46 @@ private:
   std::array<Display, nrSegments> mapping{};
 
 public:
-  constexpr DisplayMapping() noexcept {
+  [[nodiscard]] constexpr DisplayMapping() noexcept {
     // initialize all values to set
     for (auto &m : mapping) {
       m.set();
     }
   }
 
-  // exclude could be derived from only, but lets not do that for simplicity
   constexpr void setFrom(Display const val,
                          std::initializer_list<int> const only,
                          std::initializer_list<int> const exclude) noexcept {
-    for (int o : only) {
+    for (auto o : only) {
       mapping[o] &= val;
     }
-    for (int e : exclude) {
+    for (auto e : exclude) {
       mapping[e] &= ~val;
     }
   }
 
-  constexpr auto applyTo(Display d) const noexcept { return 0; }
+  [[nodiscard]] constexpr auto
+  combine(std::initializer_list<int> sources) const noexcept {
+    return std::transform_reduce(cbegin(sources), cend(sources), Display{},
+                                 std::bit_or<>{},
+                                 [&](auto i) { return mapping[i]; });
+  }
+
+  // assuming every mapping element has only one bit set.
+  [[nodiscard]] constexpr auto getResult() const noexcept {
+    auto retVal{std::array<int, nrSegments>{}};
+    for (auto i{0}; i < nrSegments; ++i) {
+      auto bitNr{0};
+      while (!mapping[i].test(bitNr)) {
+        ++bitNr;
+      }
+      retVal[bitNr] = i;
+    }
+    // std::copy(cbegin(retVal), cend(retVal),
+    //           std::ostream_iterator<int>{std::cout, ", "});
+    // std::cout << '\n';
+    return retVal;
+  }
 
   friend auto &operator<<(std::ostream &os, DisplayMapping const &dm) {
     std::copy(cbegin(dm.mapping), cend(dm.mapping),

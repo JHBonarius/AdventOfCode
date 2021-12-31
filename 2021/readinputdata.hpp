@@ -1,5 +1,5 @@
-#ifndef READINPUTDATA_H
-#define READINPUTDATA_H
+#ifndef READINPUTDATA_HPP
+#define READINPUTDATA_HPP
 #include <algorithm>
 #include <istream>
 #include <iterator>
