@@ -1,5 +1,6 @@
 #include "../readinputdata.hpp"
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -79,7 +80,7 @@ int main() {
            floodfill({p.x + 1, p.y}, floodfill);
   }};
 
-  auto basinSizes{[&] {
+  auto const basinSizes{[&] {
     auto basinSizes{std::vector<int>{}};
     basinSizes.reserve(size(lowPoints));
     transform(cbegin(lowPoints), cend(lowPoints), back_inserter(basinSizes),
@@ -89,10 +90,14 @@ int main() {
     return basinSizes;
   }()};
 
-  nth_element(begin(basinSizes), next(begin(basinSizes), 2), end(basinSizes),
-              std::greater<>{});
+  auto const threeLargest{[&] {
+    auto threeLargest{std::array<int, 3>{}};
+    partial_sort_copy(cbegin(basinSizes), cend(basinSizes), begin(threeLargest),
+                      end(threeLargest), std::greater<>{});
+    return threeLargest;
+  }()};
 
-  auto const result = std::reduce(
-      cbegin(basinSizes), next(cbegin(basinSizes), 3), 1, std::multiplies<>{});
+  auto const result = std::reduce(cbegin(threeLargest), cend(threeLargest), 1,
+                                  std::multiplies<>{});
   std::cout << "product of 3 largest basins: " << result << std::endl;
 }
