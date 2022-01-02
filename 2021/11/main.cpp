@@ -27,6 +27,18 @@ void increase_all_by_one(matrix<int> &mat) {
             [](int i) { return i + 1; });
 }
 
+void increase_neighbours(matrix<int> &mat, int x, int y) {
+  for (auto ymod{-1}; ymod < 2; ++ymod) {
+    for (auto xmod{-1}; xmod < 2; ++xmod) {
+      auto const newx{x + xmod}, newy{y + ymod};
+      if (newx >= 0 && newx < static_cast<int>(mat.width) && newy >= 0 &&
+          newy < static_cast<int>(mat.height)) {
+        ++mat(newx, newy);
+      }
+    }
+  }
+}
+
 void resolve_flashes(matrix<int> &mat) {
   auto hasFlashed{matrix<uint8_t>(mat.width, mat.height)}; // I hate vector bool
   while (true) {
@@ -34,15 +46,7 @@ void resolve_flashes(matrix<int> &mat) {
     for (auto y{0}; y < static_cast<int>(mat.height); ++y) {
       for (auto x{0}; x < static_cast<int>(mat.width); ++x) {
         if (mat(x, y) > FLASH_THRESHOLD && !hasFlashed(x, y)) {
-          for (auto ymod{-1}; ymod < 2; ++ymod) {
-            for (auto xmod{-1}; xmod < 2; ++xmod) {
-              auto const newx{x + xmod}, newy{y + ymod};
-              if (newx >= 0 && newx < static_cast<int>(mat.width) &&
-                  newy >= 0 && newy < static_cast<int>(mat.height)) {
-                ++mat(newx, newy);
-              }
-            }
-          }
+          increase_neighbours(mat, x, y);
           hasFlashed(x, y) = true;
           flashes = true;
         }
