@@ -12,4 +12,12 @@ template <typename T> auto readinputdata(std::istream &&is) {
   return data;
 }
 
+auto readinputlines(std::istream &&is) {
+  auto data{std::vector<std::string>{}};
+  for (auto str{std::string{}}; getline(is, str);) {
+    data.push_back(str);
+  }
+  return data;
+}
+
 #endif
