@@ -33,8 +33,8 @@ static constexpr auto testData{"NNCB\n"
                                "CN -> C\n"};
 
 struct InsertionRule {
-  std::string pair;
-  char insert;
+  std::string pair{};
+  char insert{};
 };
 
 auto index_of(std::vector<InsertionRule> const &irs, std::string pair) {
