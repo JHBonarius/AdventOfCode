@@ -30,4 +30,14 @@ is_any_value_out_of(T val, std::initializer_list<T> list) noexcept {
   return std::cend(list) != std::find(cbegin(list), cend(list), val);
 }
 
+// need ranges::zip
+template <class InputIt1, class InputIt2, class BinaryFunction>
+constexpr BinaryFunction for_each(InputIt1 first1, InputIt1 last1,
+                                  InputIt2 first2, BinaryFunction f) {
+  for (; first1 != last1; ++first1, ++first2) {
+    f(*first1, *first2);
+  }
+  return f; // implicit move since C++11
+}
+
 #endif
