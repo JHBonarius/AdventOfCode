@@ -25,26 +25,57 @@ static constexpr auto infinity{std::numeric_limits<int>().max()};
 
 struct Node {
   // size=2 to 4, so could use fixed_vector
-  std::vector<std::pair<Node *, int>> path_to_neighbors{};
+  std::vector<std::pair<Node *, uint8_t>> path_to_neighbors{};
   int lowest_distance{infinity};
   bool is_visited{false};
 };
 
+static constexpr auto fieldDupe{5};
+
 int main() {
-  Node *start{nullptr};
-  Node *end{nullptr};
   auto graph{[&] {
-    auto const strVec{readinputdata<std::string>( // std::stringstream{testData}
+    auto const strVec{readinputdata<std::string>( // std::stringstream{"8"}
+                                                  // std::stringstream{testData}
         std::fstream{"input"})};
-    auto const width{size(strVec[0])};
-    auto const height{size(strVec)};
+
+    auto const intVec{[&] {
+      auto intVec{std::vector<std::vector<uint8_t>>{}};
+      intVec.reserve(size(strVec) * fieldDupe);
+      auto yIt = back_inserter(intVec);
+      for (auto y{0}; y < fieldDupe; ++y) {
+        yIt =
+            transform(cbegin(strVec), cend(strVec), yIt, [=](auto const &str) {
+              auto intRow{std::vector<uint8_t>{}};
+              intRow.reserve(size(str) * fieldDupe);
+              auto xIt = back_inserter(intRow);
+              for (auto x{0}; x < fieldDupe; ++x) {
+                xIt = transform(cbegin(str), cend(str), xIt, [=](auto c) {
+                  return ((c - '0') + x + y - 1) % 9 + 1;
+                });
+              }
+              return intRow;
+            });
+      }
+      return intVec;
+    }()};
+
+    auto const width{size(intVec[0])};
+    auto const height{size(intVec)};
+
+    // for (auto y{0}; y < height; ++y) {
+    //   for (auto x{0}; x < width; ++x) {
+    //     std::cout << static_cast<int>(intVec[y][x]);
+    //   }
+    //   std::cout << '\n';
+    // }
+
     auto graph{matrix<Node>(width, height)};
     // add neighbours
     for (auto y{0}; y < height; ++y) {
       for (auto x{0}; x < width; ++x) {
         auto const make_connection{[&](size_t x_o, size_t y_o) {
           graph(x, y).path_to_neighbors.push_back(
-              std::pair{&graph(x_o, y_o), strVec[y_o][x_o] - '0'});
+              std::pair{&graph(x_o, y_o), intVec[y_o][x_o]});
         }};
         if (x > 0) {
           make_connection(x - 1, y);
@@ -60,28 +91,23 @@ int main() {
         }
       }
     }
-    start = &graph(0, 0);
-    end = &graph(width - 1, height - 1);
     return graph;
   }()};
 
-  // dijkstra's algorithm
+  // https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
   // 1)
   auto unvisited{[&] {
     auto unvisited{std::list<Node *>{}};
-    transform(std::begin(graph.data), std::end(graph.data),
-              back_inserter(unvisited), [](auto &node) { return &node; });
+    transform(begin(graph.data), end(graph.data), back_inserter(unvisited),
+              [](auto &node) { return &node; });
     return unvisited;
   }()};
   // 2)
-  start->lowest_distance = 0;
-  auto currentIt{unvisited.begin()};
-  while (*currentIt != end) {
+  auto currentIt{begin(unvisited)};
+  (*currentIt)->lowest_distance = 0;
+  // 5) mod
+  while (*currentIt != unvisited.back()) {
     auto &current{**currentIt};
-    // // 5)
-    // if (end->is_visited || current.lowest_distance == infinity) {
-    //   break;
-    // }
     // 3)
     for (auto &path_to_neighbor : current.path_to_neighbors) {
       auto &neighbor{*path_to_neighbor.first};
@@ -96,9 +122,9 @@ int main() {
     unvisited.erase(currentIt);
     // 6)
     currentIt = transform_min_element(
-        std::begin(unvisited), std::end(unvisited),
+        begin(unvisited), end(unvisited),
         [](auto neighbor) { return neighbor->lowest_distance; });
   }
 
-  std::cout << "Min path to end: " << end->lowest_distance << '\n';
+  std::cout << "Min path to end: " << (*currentIt)->lowest_distance << '\n';
 }
