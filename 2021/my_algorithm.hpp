@@ -45,44 +45,6 @@ transform_max_element(ForwardIt first, ForwardIt last,
   return max_element;
 }
 
-// template <class ForwardIt, class UnaryTransformOp = std::identity,
-//           class Compare = std::less<>>
-// [[nodiscard]] constexpr int transform_min(ForwardIt first, ForwardIt last,
-//                                           UnaryTransformOp transformOp = {},
-//                                           Compare comp = {}) noexcept {
-//   if (first == last) {
-//     return std::numeric_limits<
-//         typename std::iterator_traits<ForwardIt>::value_type>::min();
-//   }
-//   auto min_value{transformOp(*first)};
-//   while (++first != last) {
-//     auto const value{transformOp(*first)};
-//     if (comp(value, min_value)) {
-//       min_value = value;
-//     }
-//   }
-//   return min_value;
-// }
-
-// template <class ForwardIt, class UnaryTransformOp = std::identity,
-//           class Compare = std::less<>>
-// [[nodiscard]] constexpr auto transform_max(ForwardIt first, ForwardIt last,
-//                                            UnaryTransformOp transformOp = {},
-//                                            Compare comp = {}) noexcept {
-//   if (first == last) {
-//     return std::numeric_limits<
-//         typename std::iterator_traits<ForwardIt>::value_type>::max();
-//   }
-//   auto max_value{transformOp(*first)};
-//   while (++first != last) {
-//     auto const value{transformOp(*first)};
-//     if (!comp(value, max_value)) {
-//       max_value = value;
-//     }
-//   }
-//   return max_value;
-// }
-
 template <class T>
 [[nodiscard]] constexpr bool
 is_any_value_out_of(T val, std::initializer_list<T> list) noexcept {
