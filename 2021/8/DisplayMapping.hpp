@@ -1,6 +1,5 @@
 #ifndef DISPLAYMAPPING_HPP
 #define DISPLAYMAPPING_HPP
-#include "Display.hpp"
 #include <algorithm>
 #include <functional>
 #include <initializer_list>
@@ -9,11 +8,13 @@
 #include <numeric>
 #include <ostream>
 
+#include "Display.hpp"
+
 class DisplayMapping {
-private:
+ private:
   std::array<Display, nrSegments> mapping{};
 
-public:
+ public:
   [[nodiscard]] constexpr DisplayMapping() noexcept {
     // initialize all values to set
     for (auto &m : mapping) {
@@ -32,8 +33,8 @@ public:
     }
   }
 
-  [[nodiscard]] constexpr auto
-  combine(std::initializer_list<int> sources) const noexcept {
+  [[nodiscard]] constexpr auto combine(
+      std::initializer_list<int> sources) const noexcept {
     return std::transform_reduce(cbegin(sources), cend(sources), Display{},
                                  std::bit_or<>{},
                                  [&](auto i) { return mapping[i]; });

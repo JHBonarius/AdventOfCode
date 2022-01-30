@@ -1,6 +1,3 @@
-#include "../matrix.hpp"
-#include "../my_algorithm.hpp"
-#include "../readinputdata.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
@@ -9,16 +6,22 @@
 #include <sstream>
 #include <string>
 
-static constexpr auto testdata{"5483143223\n"
-                               "2745854711\n"
-                               "5264556173\n"
-                               "6141336146\n"
-                               "6357385478\n"
-                               "4167524645\n"
-                               "2176841721\n"
-                               "6882881134\n"
-                               "4846848554\n"
-                               "5283751526\n"};
+#include "../matrix.hpp"
+#include "../my_algorithm.hpp"
+#include "../readinputdata.hpp"
+
+
+static constexpr auto testdata{
+    "5483143223\n"
+    "2745854711\n"
+    "5264556173\n"
+    "6141336146\n"
+    "6357385478\n"
+    "4167524645\n"
+    "2176841721\n"
+    "6882881134\n"
+    "4846848554\n"
+    "5283751526\n"};
 
 static constexpr auto FLASH_THRESHOLD{9};
 
@@ -40,7 +43,8 @@ void increase_neighbours(matrix<int> &mat, int x, int y) {
 }
 
 void resolve_flashes(matrix<int> &mat) {
-  auto hasFlashed{matrix<uint8_t>(mat.width, mat.height)}; // I hate vector bool
+  auto hasFlashed{
+      matrix<uint8_t>(mat.width, mat.height)};  // I hate vector bool
   while (true) {
     auto flashes{false};
     for (auto y{0}; y < static_cast<int>(mat.height); ++y) {
@@ -52,8 +56,7 @@ void resolve_flashes(matrix<int> &mat) {
         }
       }
     }
-    if (!flashes)
-      break;
+    if (!flashes) break;
   }
 }
 
@@ -116,8 +119,7 @@ int main() {
   for (;; ++n) {
     increase_all_by_one(grid);
     resolve_flashes(grid);
-    if (count_and_reset_flashes(grid) == allFlashCount)
-      break;
+    if (count_and_reset_flashes(grid) == allFlashCount) break;
   }
   std::cout << "Octopi synchronize after step: " << n + 1 << std::endl;
 }

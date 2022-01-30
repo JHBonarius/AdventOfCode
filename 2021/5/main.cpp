@@ -36,7 +36,8 @@ std::istream &operator>>(std::istream &is, Line &line) {
   return is;
 }
 
-template <typename T> auto readinputdata() {
+template <typename T>
+auto readinputdata() {
   std::vector<T> data;
   std::ifstream fs("input");
   T val;

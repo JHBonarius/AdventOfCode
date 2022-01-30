@@ -12,7 +12,8 @@ static constexpr auto N = 12;
 using BinaryData = std::bitset<N>;
 using DataIntArray = std::array<int, N>;
 
-template <typename T> auto readinputdata() {
+template <typename T>
+auto readinputdata() {
   std::vector<T> data;
   std::ifstream fs("input");
   T val;
@@ -74,7 +75,7 @@ auto filter(std::vector<BinaryData> data, bool invert) {
   for (int i = N - 1; i >= 0; --i) {
     auto const resolved = invert ? ~resolve(data) : resolve(data);
     std::erase_if(data, [r = resolved[i], i](auto d) { return d[i] != r; });
-    if (data.size() == 1) // not catching size==0
+    if (data.size() == 1)  // not catching size==0
       break;
   }
   return data[0];

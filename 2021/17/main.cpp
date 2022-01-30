@@ -1,4 +1,3 @@
-#include "../readinputdata.hpp"
 #include <algorithm>
 #include <cmath>
 #include <concepts>
@@ -8,6 +7,8 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+
+#include "../readinputdata.hpp"
 
 struct Range {
   int start{}, end{};
@@ -26,7 +27,7 @@ struct Velocity {
   int x{}, y{};
 };
 struct Probe {
-  Position position{0, 0}; // explicit starting point
+  Position position{0, 0};  // explicit starting point
   Velocity velocity{};
 
   constexpr void DeStep() noexcept {
@@ -51,7 +52,7 @@ auto inverse_triangular_number(std::integral auto n) {
 int main() {
   auto const targetArea{
       // testData //
-      liveData //
+      liveData  //
   };
   // part one is very simple
   std::cout << "Max height: " << triangular_number(-targetArea.y.end - 1)

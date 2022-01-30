@@ -7,11 +7,14 @@
 static constexpr auto nrUniquePattern{10};
 static constexpr auto nrDigits{4};
 
-template <typename T> using UniquePatternArray = std::array<T, nrUniquePattern>;
-template <typename T> using DigitArray = std::array<T, nrDigits>;
+template <typename T>
+using UniquePatternArray = std::array<T, nrUniquePattern>;
+template <typename T>
+using DigitArray = std::array<T, nrDigits>;
 
 // using Observation = std::array<std::string, nrUniquePattern + nrDigits>;
-template <typename T> struct Observation {
+template <typename T>
+struct Observation {
   UniquePatternArray<T> uniquePattern;
   DigitArray<T> digits;
 };
@@ -20,7 +23,7 @@ template <typename T>
 std::istream &operator>>(std::istream &is, Observation<T> &obs) {
   auto isIt{std::istream_iterator<T>{is}};
   copy_n(isIt, nrUniquePattern, begin(obs.uniquePattern));
-  advance(isIt, 2); // get the '|' no idea why it should be 2 and not 1...
+  advance(isIt, 2);  // get the '|' no idea why it should be 2 and not 1...
   copy_n(isIt, nrDigits, begin(obs.digits));
   return is;
 }

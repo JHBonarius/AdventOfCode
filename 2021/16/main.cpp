@@ -1,5 +1,3 @@
-#include "../my_algorithm.hpp"
-#include "../readinputdata.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -12,24 +10,27 @@
 #include <variant>
 #include <vector>
 
+#include "../my_algorithm.hpp"
+#include "../readinputdata.hpp"
+
 static constexpr auto testInput1{"D2FE28"};
 static constexpr auto testInput2{"38006F45291200"};
 static constexpr auto testInput3{"EE00D40C823060"};
 static constexpr auto testInput4{
-    "8A004A801A8002F478\n"             // 16
-    "620080001611562C8802118E34\n"     // 12
-    "C0015000016115A2E0802F182340\n"   // 23
-    "A0016C880162017C3686B18A3D4780\n" // 31
+    "8A004A801A8002F478\n"              // 16
+    "620080001611562C8802118E34\n"      // 12
+    "C0015000016115A2E0802F182340\n"    // 23
+    "A0016C880162017C3686B18A3D4780\n"  // 31
 };
 static constexpr auto testInput5{
-    "C200B40A82\n"                 // 3
-    "04005AC33890\n"               // 54
-    "880086C3E88112\n"             // 7
-    "CE00C43D881120\n"             // 9
-    "D8005AC2A8F0\n"               // 1
-    "F600BC2D8F\n"                 // 0
-    "9C005AC2F8F0\n"               // 0
-    "9C0141080250320F1802104A08\n" // 1
+    "C200B40A82\n"                  // 3
+    "04005AC33890\n"                // 54
+    "880086C3E88112\n"              // 7
+    "CE00C43D881120\n"              // 9
+    "D8005AC2A8F0\n"                // 1
+    "F600BC2D8F\n"                  // 0
+    "9C005AC2F8F0\n"                // 0
+    "9C0141080250320F1802104A08\n"  // 1
 };
 
 using Value_t = int64_t;
@@ -61,7 +62,8 @@ struct Packet {
   std::variant<Literal, Operator> contents{};
 };
 
-template <int N> auto take_N_bits(std::vector<bool>::const_iterator &it) {
+template <int N>
+auto take_N_bits(std::vector<bool>::const_iterator &it) {
   auto retVal{static_cast<Value_t>(0)};
   for (auto i{0}; i < N; ++i) {
     retVal <<= 1;
@@ -119,7 +121,7 @@ Packet parse_packet(std::vector<bool>::const_iterator &it) {
   if (type_id == PacketType::LITERAL) {
     // std::cout << "Literal packet" << std::endl;
     packet.contents = parse_literal(it);
-  } else { // PacketType::Operator
+  } else {  // PacketType::Operator
     // std::cout << "Operator packet" << std::endl;
     packet.contents = parse_operator(it, type_id);
   }
@@ -149,38 +151,38 @@ Value_t get_result(Operator const op) {
   auto const packetResultGetter{
       [](Packet const &packet) { return get_result(packet); }};
   switch (op.operation) {
-  case PacketType::SUM:
-    // REALLY missing a pipable left-fold operation in std::ranges
-    return std::transform_reduce(cbegin(op.sub_packets), cend(op.sub_packets),
-                                 static_cast<Value_t>(0), std::plus<>{},
-                                 packetResultGetter);
-    break;
-  case PacketType::PRODUCT:
-    // REALLY missing a pipable left-fold operation in std::ranges
-    return std::transform_reduce(cbegin(op.sub_packets), cend(op.sub_packets),
-                                 static_cast<Value_t>(1), std::multiplies<>{},
-                                 packetResultGetter);
-    break;
-  case PacketType::MINIMUM:
-    return std::ranges::min(op.sub_packets |
-                            std::views::transform(packetResultGetter));
-    break;
-  case PacketType::MAXIMUM:
-    return std::ranges::max(op.sub_packets |
-                            std::views::transform(packetResultGetter));
-    break;
-  case PacketType::GREATER_THEN:
-    return get_result(op.sub_packets[0]) > get_result(op.sub_packets[1]);
-    break;
-  case PacketType::LESS_THEN:
-    return get_result(op.sub_packets[0]) < get_result(op.sub_packets[1]);
-    break;
-  case PacketType::EQUAL_TO:
-    return get_result(op.sub_packets[0]) == get_result(op.sub_packets[1]);
-    break;
-  default:
-    return false;
-    break; // error
+    case PacketType::SUM:
+      // REALLY missing a pipable left-fold operation in std::ranges
+      return std::transform_reduce(cbegin(op.sub_packets), cend(op.sub_packets),
+                                   static_cast<Value_t>(0), std::plus<>{},
+                                   packetResultGetter);
+      break;
+    case PacketType::PRODUCT:
+      // REALLY missing a pipable left-fold operation in std::ranges
+      return std::transform_reduce(cbegin(op.sub_packets), cend(op.sub_packets),
+                                   static_cast<Value_t>(1), std::multiplies<>{},
+                                   packetResultGetter);
+      break;
+    case PacketType::MINIMUM:
+      return std::ranges::min(op.sub_packets |
+                              std::views::transform(packetResultGetter));
+      break;
+    case PacketType::MAXIMUM:
+      return std::ranges::max(op.sub_packets |
+                              std::views::transform(packetResultGetter));
+      break;
+    case PacketType::GREATER_THEN:
+      return get_result(op.sub_packets[0]) > get_result(op.sub_packets[1]);
+      break;
+    case PacketType::LESS_THEN:
+      return get_result(op.sub_packets[0]) < get_result(op.sub_packets[1]);
+      break;
+    case PacketType::EQUAL_TO:
+      return get_result(op.sub_packets[0]) == get_result(op.sub_packets[1]);
+      break;
+    default:
+      return false;
+      break;  // error
   }
 }
 
@@ -191,9 +193,10 @@ Value_t get_result(Packet const &packet) {
 }
 
 int main() {
-  auto const strVec{readinputdata<std::string>( // std::stringstream{testInput5}
-      std::fstream("input")                     //
-      )};
+  auto const strVec{
+      readinputdata<std::string>(  // std::stringstream{testInput5}
+          std::fstream("input")    //
+          )};
 
   auto const bitVecs{[&] {
     auto bitVecs{std::vector<std::vector<bool>>{}};
@@ -221,7 +224,7 @@ int main() {
     auto packets{std::vector<Packet>{}};
     transform(cbegin(bitVecs), cend(bitVecs), back_inserter(packets),
               [](auto const &bitVec) {
-                auto it = cbegin(bitVec); // need lvalue
+                auto it = cbegin(bitVec);  // need lvalue
                 return parse_packet(it);
               });
     return packets;

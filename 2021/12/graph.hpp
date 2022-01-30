@@ -9,10 +9,10 @@
 
 // https://stackoverflow.com/a/58446
 class graph {
-private:
+ private:
   std::map<std::string, std::set<std::string>> map{};
 
-public:
+ public:
   void add_edge(std::string const &node1, std::string const &node2) {
     map[node1].insert(node2);
   }

@@ -1,16 +1,17 @@
 #ifndef DISPLAYRESOLVER_HPP
 #define DISPLAYRESOLVER_HPP
-#include "../my_algorithm.hpp"
-#include "Display.hpp"
-#include "DisplayMapping.hpp"
-#include "Observation.hpp"
 #include <algorithm>
 #include <array>
 #include <exception>
 #include <numeric>
 
+#include "../my_algorithm.hpp"
+#include "Display.hpp"
+#include "DisplayMapping.hpp"
+#include "Observation.hpp"
+
 class DisplayResolver {
-private:
+ private:
   Observation<Display> const observation;
 
   //   0:      1:      2:      3:      4:
@@ -31,16 +32,16 @@ private:
   // .    f  e    f  .    f  e    f  .    f
   //  gggg    gggg    ....    gggg    gggg
   static constexpr auto decoding{std::array{
-      letters_to_Display("abcefg"),  // 0
-      letters_to_Display("cf"),      // 1
-      letters_to_Display("acdeg"),   // 2
-      letters_to_Display("acdfg"),   // 3
-      letters_to_Display("bcdf"),    // 4
-      letters_to_Display("abdfg"),   // 5
-      letters_to_Display("abdefg"),  // 6
-      letters_to_Display("acf"),     // 7
-      letters_to_Display("abcdefg"), // 8
-      letters_to_Display("abcdfg"),  // 9
+      letters_to_Display("abcefg"),   // 0
+      letters_to_Display("cf"),       // 1
+      letters_to_Display("acdeg"),    // 2
+      letters_to_Display("acdfg"),    // 3
+      letters_to_Display("bcdf"),     // 4
+      letters_to_Display("abdfg"),    // 5
+      letters_to_Display("abdefg"),   // 6
+      letters_to_Display("acf"),      // 7
+      letters_to_Display("abcdefg"),  // 8
+      letters_to_Display("abcdfg"),   // 9
   }};
 
   static constexpr auto decode(Display d) {
@@ -78,7 +79,7 @@ private:
     return retVal;
   }
 
-public:
+ public:
   constexpr DisplayResolver(Observation<Display> obs) noexcept
       : observation{obs} {}
 
@@ -114,15 +115,15 @@ public:
 
     // "7": second least: 3
     // determine/finish 0
-    resolver1(3, {0}, {1, 3, 4, 6}); // 2 and 5 already fixed
+    resolver1(3, {0}, {1, 3, 4, 6});  // 2 and 5 already fixed
     // std::cout << mapping << '\n';
 
     // "4": third least: 4
     // determine 1 and 3
-    resolver1(4, {1, 3}, {4, 6}); // ^ and 0 already at final value
+    resolver1(4, {1, 3}, {4, 6});  // ^ and 0 already at final value
     // std::cout << mapping << '\n';
 
-    auto const allWithLength6{findAllWithLength<6, 3>()}; // 0,6,9
+    auto const allWithLength6{findAllWithLength<6, 3>()};  // 0,6,9
     auto const resolver2([&](std::initializer_list<int> maskSegments,
                              std::initializer_list<int> only,
                              std::initializer_list<int> exclude) {
@@ -134,7 +135,7 @@ public:
     });
 
     // "9": determine/finish 4 and 6
-    resolver2({0, 1, 2}, {6}, {4}); // 5 is duplicate of 2, 3 of 1
+    resolver2({0, 1, 2}, {6}, {4});  // 5 is duplicate of 2, 3 of 1
     // std::cout << mapping << '\n';
 
     // home stretch

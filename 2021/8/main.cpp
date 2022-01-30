@@ -1,8 +1,3 @@
-#include "../my_algorithm.hpp"
-#include "../readinputdata.hpp"
-#include "Display.hpp"
-#include "DisplayResolver.hpp"
-#include "Observation.hpp"
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -13,6 +8,12 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "../my_algorithm.hpp"
+#include "../readinputdata.hpp"
+#include "Display.hpp"
+#include "DisplayResolver.hpp"
+#include "Observation.hpp"
 
 using StringObservation = Observation<std::string>;
 using BinaryObservation = Observation<Display>;

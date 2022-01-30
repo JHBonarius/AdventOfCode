@@ -1,4 +1,3 @@
-#include "../readinputdata.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -9,11 +8,14 @@
 #include <string>
 #include <vector>
 
-static constexpr auto testdata{"2199943210\n"
-                               "3987894921\n"
-                               "9856789892\n"
-                               "8767896789\n"
-                               "9899965678\n"};
+#include "../readinputdata.hpp"
+
+static constexpr auto testdata{
+    "2199943210\n"
+    "3987894921\n"
+    "9856789892\n"
+    "8767896789\n"
+    "9899965678\n"};
 
 struct point {
   int x{}, y{};

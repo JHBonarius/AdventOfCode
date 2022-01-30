@@ -16,8 +16,7 @@ int main() {
   auto const horizontal_postitions{[]() {
     auto horizontal_postitions{std::vector<int>{}};
     auto fs{std::ifstream{"input"}};
-    if (!fs.is_open())
-      throw std::ios_base::failure("file not found");
+    if (!fs.is_open()) throw std::ios_base::failure("file not found");
     int val;
     while (fs >> val) {
       horizontal_postitions.push_back(val);

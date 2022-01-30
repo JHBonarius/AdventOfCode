@@ -1,5 +1,3 @@
-#include "../my_algorithm.hpp"
-#include "../readinputdata.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
@@ -11,26 +9,30 @@
 #include <string>
 #include <vector>
 
+#include "../my_algorithm.hpp"
+#include "../readinputdata.hpp"
+
 namespace ranges = std::ranges;
 
-static constexpr auto testData{"NNCB\n"
-                               "\n"
-                               "CH -> B\n"
-                               "HH -> N\n"
-                               "CB -> H\n"
-                               "NH -> C\n"
-                               "HB -> C\n"
-                               "HC -> B\n"
-                               "HN -> C\n"
-                               "NN -> C\n"
-                               "BH -> H\n"
-                               "NC -> B\n"
-                               "NB -> B\n"
-                               "BN -> B\n"
-                               "BB -> N\n"
-                               "BC -> B\n"
-                               "CC -> N\n"
-                               "CN -> C\n"};
+static constexpr auto testData{
+    "NNCB\n"
+    "\n"
+    "CH -> B\n"
+    "HH -> N\n"
+    "CB -> H\n"
+    "NH -> C\n"
+    "HB -> C\n"
+    "HC -> B\n"
+    "HN -> C\n"
+    "NN -> C\n"
+    "BH -> H\n"
+    "NC -> B\n"
+    "NB -> B\n"
+    "BN -> B\n"
+    "BB -> N\n"
+    "BC -> B\n"
+    "CC -> N\n"
+    "CN -> C\n"};
 
 struct InsertionRule {
   std::string pair{};
@@ -44,7 +46,7 @@ auto index_of(std::vector<InsertionRule> const &irs, std::string pair) {
 static constexpr auto N{40};
 
 int main() {
-  auto const inputStrs{readinputlines( // std::stringstream{testData}
+  auto const inputStrs{readinputlines(  // std::stringstream{testData}
       std::fstream{"input"})};
   auto const polymerTemplate{inputStrs[0]};
   auto const insertionRules{[&] {
@@ -90,8 +92,8 @@ int main() {
     for_each(
         cbegin(insertionRules), cend(insertionRules), cbegin(pairsCount),
         [&](auto const &ir, auto count) { letterCount[ir.pair[0]] += count; });
-    ++letterCount[polymerTemplate.back()]; // missing last letter, which is
-                                           // constant
+    ++letterCount[polymerTemplate.back()];  // missing last letter, which is
+                                            // constant
     return letterCount;
   }()};
 

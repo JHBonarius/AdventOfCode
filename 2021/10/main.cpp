@@ -1,4 +1,3 @@
-#include "../readinputdata.hpp"
 #include <concepts>
 #include <cstdint>
 #include <fstream>
@@ -9,16 +8,19 @@
 #include <string>
 #include <vector>
 
-static constexpr auto testdata{"[({(<(())[]>[[{[]{<()<>>\n"
-                               "[(()[<>])]({[<{<<[]>>(\n"
-                               "{([(<{}[<>[]}>{[]{[(<()>\n"
-                               "(((({<>}<{<{<>}{[]{[]{}\n"
-                               "[[<[([]))<([[{}[[()]]]\n"
-                               "[{[{({}]{}}([{[{{{}}([]\n"
-                               "{<[[]]>}<{[{[{[]{()[[[]\n"
-                               "[<(<(<(<{}))><([]([]()\n"
-                               "<{([([[(<>()){}]>(<<{{\n"
-                               "<{([{{}}[<[[[<>{}]]]>[]]\n"};
+#include "../readinputdata.hpp"
+
+static constexpr auto testdata{
+    "[({(<(())[]>[[{[]{<()<>>\n"
+    "[(()[<>])]({[<{<<[]>>(\n"
+    "{([(<{}[<>[]}>{[]{[(<()>\n"
+    "(((({<>}<{<{<>}{[]{[]{}\n"
+    "[[<[([]))<([[{}[[()]]]\n"
+    "[{[{({}]{}}([{[{{{}}([]\n"
+    "{<[[]]>}<{[{[{[]{()[[[]\n"
+    "[<(<(<(<{}))><([]([]()\n"
+    "<{([([[(<>()){}]>(<<{{\n"
+    "<{([{{}}[<[[[<>{}]]]>[]]\n"};
 
 int main() {
   auto const data{readinputdata<std::string>(
@@ -50,16 +52,16 @@ int main() {
                                        [](std::integral auto acc, char c) {
                                          return acc * 5 + [](char c) {
                                            switch (c) {
-                                           case '(':
-                                             return 1;
-                                           case '[':
-                                             return 2;
-                                           case '{':
-                                             return 3;
-                                           case '<':
-                                             return 4;
+                                             case '(':
+                                               return 1;
+                                             case '[':
+                                               return 2;
+                                             case '{':
+                                               return 3;
+                                             case '<':
+                                               return 4;
                                            }
-                                           return 0; // will not reach
+                                           return 0;  // will not reach
                                          }(c);
                                        });
               });
@@ -75,7 +77,7 @@ int main() {
   auto const incompleteScores{[&] {
     auto incompleteScores{std::vector<int64_t>{}};
     incompleteScores.reserve(
-        size(scores)); // could filter all positive numbers, but whatever.
+        size(scores));  // could filter all positive numbers, but whatever.
     copy_if(cbegin(scores), cend(scores), back_inserter(incompleteScores),
             [](std::integral auto score) { return score > 0; });
     return incompleteScores;

@@ -1,6 +1,3 @@
-#include "../matrix.hpp"
-#include "../my_algorithm.hpp"
-#include "../readinputdata.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
@@ -10,16 +7,21 @@
 #include <string>
 #include <vector>
 
-static constexpr auto testData{"1163751742\n"
-                               "1381373672\n"
-                               "2136511328\n"
-                               "3694931569\n"
-                               "7463417111\n"
-                               "1319128137\n"
-                               "1359912421\n"
-                               "3125421639\n"
-                               "1293138521\n"
-                               "2311944581\n"};
+#include "../matrix.hpp"
+#include "../my_algorithm.hpp"
+#include "../readinputdata.hpp"
+
+static constexpr auto testData{
+    "1163751742\n"
+    "1381373672\n"
+    "2136511328\n"
+    "3694931569\n"
+    "7463417111\n"
+    "1319128137\n"
+    "1359912421\n"
+    "3125421639\n"
+    "1293138521\n"
+    "2311944581\n"};
 
 static constexpr auto infinity{std::numeric_limits<int>().max()};
 
@@ -34,9 +36,10 @@ static constexpr auto fieldDupe{5};
 
 int main() {
   auto graph{[&] {
-    auto const strVec{readinputdata<std::string>( // std::stringstream{"8"}
-                                                  // std::stringstream{testData}
-        std::fstream{"input"})};
+    auto const strVec{
+        readinputdata<std::string>(  // std::stringstream{"8"}
+                                     // std::stringstream{testData}
+            std::fstream{"input"})};
 
     auto const intVec{[&] {
       auto intVec{std::vector<std::vector<uint8_t>>{}};

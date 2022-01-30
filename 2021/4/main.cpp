@@ -115,8 +115,7 @@ auto FindWinningBoard(std::vector<Board> &boards,
                        [](Board const &board) { return IsWinning(board); })
                 << ' ';
     }
-    if (boards.size() == 0)
-      break;
+    if (boards.size() == 0) break;
     //    State(boards);
     std::cout << '\n';
   }
@@ -133,8 +132,7 @@ int main() {
     std::stringstream numberLineSs{numberLine};
     for (int i; numberLineSs >> i;) {
       numbers.push_back(i);
-      if (numberLineSs.peek() == ',')
-        numberLineSs.ignore();
+      if (numberLineSs.peek() == ',') numberLineSs.ignore();
     }
 
     Board val{};

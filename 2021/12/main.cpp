@@ -1,5 +1,3 @@
-#include "../readinputdata.hpp"
-#include "graph.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -7,43 +5,49 @@
 #include <string>
 #include <vector>
 
-static constexpr auto testData1{"start-A\n"
-                                "start-b\n"
-                                "A-c\n"
-                                "A-b\n"
-                                "b-d\n"
-                                "A-end\n"
-                                "b-end\n"};
+#include "../readinputdata.hpp"
+#include "graph.hpp"
 
-static constexpr auto testData2{"dc-end\n"
-                                "HN-start\n"
-                                "start-kj\n"
-                                "dc-start\n"
-                                "dc-HN\n"
-                                "LN-dc\n"
-                                "HN-end\n"
-                                "kj-sa\n"
-                                "kj-HN\n"
-                                "kj-dc\n"};
+static constexpr auto testData1{
+    "start-A\n"
+    "start-b\n"
+    "A-c\n"
+    "A-b\n"
+    "b-d\n"
+    "A-end\n"
+    "b-end\n"};
 
-static constexpr auto testData3{"fs-end\n"
-                                "he-DX\n"
-                                "fs-he\n"
-                                "start-DX\n"
-                                "pj-DX\n"
-                                "end-zg\n"
-                                "zg-sl\n"
-                                "zg-pj\n"
-                                "pj-he\n"
-                                "RW-he\n"
-                                "fs-DX\n"
-                                "pj-RW\n"
-                                "zg-RW\n"
-                                "start-pj\n"
-                                "he-WI\n"
-                                "zg-he\n"
-                                "pj-fs\n"
-                                "start-RW\n"};
+static constexpr auto testData2{
+    "dc-end\n"
+    "HN-start\n"
+    "start-kj\n"
+    "dc-start\n"
+    "dc-HN\n"
+    "LN-dc\n"
+    "HN-end\n"
+    "kj-sa\n"
+    "kj-HN\n"
+    "kj-dc\n"};
+
+static constexpr auto testData3{
+    "fs-end\n"
+    "he-DX\n"
+    "fs-he\n"
+    "start-DX\n"
+    "pj-DX\n"
+    "end-zg\n"
+    "zg-sl\n"
+    "zg-pj\n"
+    "pj-he\n"
+    "RW-he\n"
+    "fs-DX\n"
+    "pj-RW\n"
+    "zg-RW\n"
+    "start-pj\n"
+    "he-WI\n"
+    "zg-he\n"
+    "pj-fs\n"
+    "start-RW\n"};
 
 static constexpr auto start{"start"};
 static constexpr auto end{"end"};
@@ -60,7 +64,7 @@ auto dfs(graph const &graph) {
   auto nrOfPaths{0};
   auto visited{std::vector<std::string>{start}};
   auto const may_still_visit{[&](std::string const &node) {
-    return isupper( // UB when char is not convertible to unsigned char
+    return isupper(  // UB when char is not convertible to unsigned char
                node[0]) ||
            find(cbegin(visited), cend(visited), node) == cend(visited);
   }};
@@ -94,7 +98,7 @@ int main() {
       // std::stringstream{testData1}
       // std::stringstream{testData2}
       // std::stringstream{testData3}
-      std::ifstream{"input"} // clang-format on
+      std::ifstream{"input"}  // clang-format on
       )};
   auto const paths{[&] {
     auto paths{std::vector<std::pair<std::string, std::string>>{}};
