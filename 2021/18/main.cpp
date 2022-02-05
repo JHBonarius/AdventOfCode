@@ -20,104 +20,132 @@ static constexpr auto testData{
     "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]\n"
     "[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]\n"};
 
-using PairIndex = Named<int, struct index_for_vector_of_Pair>;
-using LiteralIndex = Named<int, struct index_for_vector_of_Literal>;
+struct index_for_vector_of_Pair;
+using PairIndex = Named<int, index_for_vector_of_Pair>;
 
-struct Literal {
+struct index_for_vector_of_RegularNumber;
+using RegNumIndex = Named<int, index_for_vector_of_RegularNumber>;
+
+struct RegularNumber {
+  using IndexType = RegNumIndex;
+
   int value{};
-  LiteralIndex leftLiteralIndex{}, rightLiteralIndex{};
+  RegNumIndex leftIdx{}, rightIdx{};
 };
 
-using IndexVariant = std::variant<PairIndex, LiteralIndex>;
+using IndexVariant = std::variant<PairIndex, RegNumIndex>;
 
 struct Pair {
+  using IndexType = PairIndex;
+
   PairIndex parent{};
-  IndexVariant left{}, right{};
+  IndexVariant leftIdx{}, rightIdx{};
 };
 
 static auto pairVec{std::vector<Pair>{}};
-static auto literalVec{std::vector<Literal>{}};
-static auto leftLiteralIndex{LiteralIndex{-1}};
+static auto regNumVec{std::vector<RegularNumber>{}};
+static auto leftRegNumIdx{RegNumIndex{-1}};
+
+static constexpr auto invalid_index{-1};
+
+template <typename Type>
+auto get_last_index(std::vector<Type> const &vec) {
+  using Index = typename Type::IndexType;
+  return Index{static_cast<typename Index::UnderlyingType>(size(vec))};
+}
 
 auto generate_pair(std::string::const_iterator &it, PairIndex parent)
     -> PairIndex;
 
-auto generate_single(std::string::const_iterator &it, PairIndex pairIdx)
+auto generate_side(std::string::const_iterator &it, PairIndex pairIdx)
     -> IndexVariant {
   if (*it == '[') {
     return generate_pair(it, pairIdx);
   } else {
-    literalVec.emplace_back(*it - '0', leftLiteralIndex, LiteralIndex{-1});
-    auto const litIdx{LiteralIndex{
-        static_cast<LiteralIndex::UnderlyingType>(size(literalVec))}};
-    if (leftLiteralIndex != -1) {
-      literalVec[leftLiteralIndex].rightLiteralIndex = litIdx;
+    regNumVec.emplace_back(*it - '0', leftRegNumIdx,
+                           RegNumIndex{invalid_index});
+    auto const litIdx{get_last_index(regNumVec)};
+    if (leftRegNumIdx != invalid_index) {
+      regNumVec[leftRegNumIdx].rightIdx = litIdx;
     }
-    leftLiteralIndex = litIdx;
+    leftRegNumIdx = litIdx;
     return litIdx;
   };
 }
 
 auto generate_pair(std::string::const_iterator &it,
-                   PairIndex parent = PairIndex{-1}) -> PairIndex {
+                   PairIndex parent = PairIndex{invalid_index}) -> PairIndex {
   pairVec.emplace_back();
-  auto const pairIdx{
-      PairIndex{static_cast<PairIndex::UnderlyingType>(size(pairVec))}};
+  auto const pairIdx{get_last_index(pairVec)};
   auto &pair{pairVec.back()};
   pair.parent = parent;
 
   ++it;  // skip [
-  pair.left = generate_single(it, pairIdx);
+  pair.leftIdx = generate_side(it, pairIdx);
   ++it;  // skip comma
-  pair.right = generate_single(it, pairIdx);
+  pair.rightIdx = generate_side(it, pairIdx);
   ++it;  // skip ]
 
+  return pairIdx;
+}
+
+// To add two snailfish numbers, form a pair from the left and right parameters
+// of the addition operator.
+auto add_pair(PairIndex leftIdx, PairIndex rightIdx) {
+  pairVec.emplace_back(PairIndex{invalid_index}, leftIdx, rightIdx);
+  auto const pairIdx{get_last_index(pairVec)};
+  pairVec[leftIdx].parent = pairIdx;
+  pairVec[rightIdx].parent = pairIdx;
   return pairIdx;
 }
 
 auto explode_pair(PairIndex p) {
   auto const &pair{pairVec[p]};
   // the pair's left value is added to the first regular number to the left of
-  // the exploding pair (if any)
-  auto const &left{literalVec[get<LiteralIndex>(pair.left)]};
-  if (left.leftLiteralIndex != -1) {
-    literalVec[left.leftLiteralIndex].value += left.value;
+  // the exploding pair (if any).
+  auto const &left{regNumVec[get<RegNumIndex>(pair.leftIdx)]};
+  if (left.leftIdx != invalid_index) {
+    regNumVec[left.leftIdx].value += left.value;
   }
   // the pair's right value is added to the first regular number to the right of
-  // the exploding pair (if any)
-  auto const &right{literalVec[get<LiteralIndex>(pair.right)]};
-  if (right.rightLiteralIndex != -1) {
-    literalVec[right.rightLiteralIndex].value += right.value;
+  // the exploding pair (if any).
+  auto const &right{regNumVec[get<RegNumIndex>(pair.rightIdx)]};
+  if (right.rightIdx != invalid_index) {
+    regNumVec[right.rightIdx].value += right.value;
   }
-  // the entire exploding pair is replaced with the regular number 0
-  literalVec.emplace_back(0, left.leftLiteralIndex, right.rightLiteralIndex);
-  return LiteralIndex{
-      static_cast<LiteralIndex::UnderlyingType>(size(literalVec))};
+  // the entire exploding pair is replaced with the regular number 0.
+  regNumVec.emplace_back(0, left.leftIdx, right.rightIdx);
+  return get_last_index(regNumVec);
 }
 
-auto split_literal(LiteralIndex l, PairIndex parent) {
-  auto const &literal{literalVec[l]};
+auto split_literal(RegNumIndex l, PairIndex parent) {
+  auto const &literal{regNumVec[l]};
 
   // the left element of the pair should be the regular number divided by two
   // and rounded **down**
-  literalVec.emplace_back(literal.value / 2, literal.leftLiteralIndex,
-                          LiteralIndex{-1});
-  auto const leftLiteralIndex{LiteralIndex{
-      static_cast<LiteralIndex::UnderlyingType>(size(literalVec))}};
+  regNumVec.emplace_back(literal.value / 2, literal.leftIdx, RegNumIndex{-1});
+  auto const leftLiteralIndex{get_last_index(regNumVec)};
 
   // the right element of the pair should be the regular number divided by two
   // and rounded **up**
-  literalVec.emplace_back((literal.value + 1) / 2, leftLiteralIndex,
-                          literal.rightLiteralIndex);
-  auto const rightLiteralIndex{LiteralIndex{
-      static_cast<LiteralIndex::UnderlyingType>(size(literalVec))}};
+  regNumVec.emplace_back((literal.value + 1) / 2, leftLiteralIndex,
+                         literal.rightIdx);
+  auto const rightLiteralIndex{get_last_index(regNumVec)};
 
   // (fix reference)
-  literalVec[leftLiteralIndex].rightLiteralIndex = rightLiteralIndex;
+  regNumVec[leftLiteralIndex].rightIdx = rightLiteralIndex;
 
   // replace it with a pair
   pairVec.emplace_back(parent, leftLiteralIndex, rightLiteralIndex);
-  return PairIndex{static_cast<PairIndex::UnderlyingType>(size(pairVec))};
+  return get_last_index(pairVec);
+}
+
+bool tryExplode(PairIndex pi) { return false; }
+bool trySplit(PairIndex pi) { return false; }
+
+void reduce(PairIndex pi) {
+  while (tryExplode(pi) || trySplit(pi)) {
+  }
 }
 
 int main() {
@@ -126,15 +154,15 @@ int main() {
       // std::ifstream{"input"} //
       )};
   // WTF this assignment! Poor snailfish kids.
-  auto const outerPairs{[&] {
-    auto outerPairs{std::vector<PairIndex>{}};
-    outerPairs.reserve(size(snailFishNumbers));
+  auto const outerPairIdxs{[&] {
+    auto outerPairIdxs{std::vector<PairIndex>{}};
+    outerPairIdxs.reserve(size(snailFishNumbers));
     transform(cbegin(snailFishNumbers), cend(snailFishNumbers),
-              back_inserter(outerPairs), [](auto const str) {
+              back_inserter(outerPairIdxs), [](auto const &str) {
                 auto it{cbegin(str)};  // need lvalue
                 return generate_pair(it);
               });
-    return outerPairs;
+    return outerPairIdxs;
   }()};
 
   return 0;
