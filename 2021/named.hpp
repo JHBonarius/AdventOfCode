@@ -14,7 +14,7 @@ class Named {
     noexcept(std::is_nothrow_default_constructible_v<Type>)
     requires std::default_initializable<Type>
   = default;
-  template <typename... Args>
+  // template <typename... Args>
   // constexpr Named(Args... args)
   //   noexcept(std::is_nothrow_constructible_v<Type,Args...>) 
   //   requires std::constructible_from<Type,Args...>
@@ -80,7 +80,7 @@ class Named {
 
  private:
   Type val_;
+  // clang-format on
 };
-// clang-format on
 
 #endif
