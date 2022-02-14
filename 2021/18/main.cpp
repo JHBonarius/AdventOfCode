@@ -54,9 +54,6 @@ struct Pair {
 static auto pairVec{std::vector<Pair>{}};
 static auto regNumVec{std::vector<RegularNumber>{}};
 
-// used for converting the input strings to pairs
-static auto leftRegNumIdx{RegNumIndex{-1}};
-
 static constexpr auto invalid_index{-1};
 
 template <typename Type>
@@ -65,13 +62,13 @@ auto get_last_index(std::vector<Type> const &vec) {
   return Index{static_cast<typename Index::UnderlyingType>(size(vec) - 1)};
 }
 
-auto generate_pair(std::string::const_iterator &it, PairIndex parent)
-    -> PairIndex;
+auto generate_pair(std::string::const_iterator &it, RegNumIndex &leftRegNumIdx,
+                   PairIndex parent) -> PairIndex;
 
-auto generate_side(std::string::const_iterator &it, PairIndex pairIdx)
-    -> IndexVariant {
+auto generate_side(std::string::const_iterator &it, RegNumIndex &leftRegNumIdx,
+                   PairIndex pairIdx) -> IndexVariant {
   if (*it == '[') {
-    return generate_pair(it, pairIdx);
+    return generate_pair(it, leftRegNumIdx, pairIdx);
   }
   // else {
   regNumVec.emplace_back(*it++ - '0', leftRegNumIdx,
@@ -85,7 +82,7 @@ auto generate_side(std::string::const_iterator &it, PairIndex pairIdx)
   //};
 }
 
-auto generate_pair(std::string::const_iterator &it,
+auto generate_pair(std::string::const_iterator &it, RegNumIndex &leftRegNumIdx,
                    PairIndex parent = PairIndex{invalid_index}) -> PairIndex {
   pairVec.emplace_back();
   auto const pairIdx{get_last_index(pairVec)};
@@ -94,10 +91,10 @@ auto generate_pair(std::string::const_iterator &it,
   // NEED to use the index instead of reference, since the calls to
   // "generate_side" will reallocate the pairVec
   ++it;  // skip [
-  pairVec[pairIdx].leftIdx = generate_side(it, pairIdx);
+  pairVec[pairIdx].leftIdx = generate_side(it, leftRegNumIdx, pairIdx);
   // std::cout << "Check pair leftidx: " << pair.leftIdx << '\n';
   ++it;  // skip comma
-  pairVec[pairIdx].rightIdx = generate_side(it, pairIdx);
+  pairVec[pairIdx].rightIdx = generate_side(it, leftRegNumIdx, pairIdx);
   // std::cout << "Check pair rightidx: " << pair.rightIdx << '\n';
   ++it;  // skip ]
 
@@ -138,11 +135,11 @@ auto add_pair(PairIndex leftIdx, PairIndex rightIdx) {
 template <typename Projection>
 auto add_value_to_neighbor(IndexVariant myIdx, Projection proj,
                            RegNumIndex newIdx) {
-  auto const &self{regNumVec[get<RegNumIndex>(myIdx)]};
-  auto const neighborIdx = std::invoke(proj, self);
+  auto const &current{regNumVec[get<RegNumIndex>(myIdx)]};
+  auto const neighborIdx = std::invoke(proj, current);
   if (neighborIdx != invalid_index) {
     auto &neighbor = regNumVec[neighborIdx];
-    neighbor.value += self.value;
+    neighbor.value += current.value;
     neighbor.rightIdx = newIdx;
   }
   return neighborIdx;
@@ -224,7 +221,8 @@ int main() {
     transform(cbegin(snailFishNumbers), cend(snailFishNumbers),
               back_inserter(outerPairIdxs), [](auto const &str) {
                 auto it{cbegin(str)};  // need lvalue
-                return generate_pair(it);
+                auto leftRegNumIdx{RegNumIndex{invalid_index}};
+                return generate_pair(it, leftRegNumIdx);
               });
     return outerPairIdxs;
   }()};
