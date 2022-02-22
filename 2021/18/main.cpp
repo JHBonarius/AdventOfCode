@@ -102,11 +102,11 @@ auto generate_pair(std::string::const_iterator &it, RegNumIndex &leftRegNumIdx,
   return pairIdx;
 }
 
-template <typename Projection>
-auto get_outer_regnumidx(Pair const &pair, Projection proj) {
-  auto idx{std::invoke(proj, pair)};
+template <typename NeighborIdx>
+auto get_outer_regnumidx(Pair const &pair, NeighborIdx neightborIdx) {
+  auto idx{std::invoke(neightborIdx, pair)};
   while (holds_alternative<PairIndex>(idx)) {
-    idx = std::invoke(proj, pairVec[get<PairIndex>(idx)]);
+    idx = std::invoke(neightborIdx, pairVec[get<PairIndex>(idx)]);
   }
   return get<RegNumIndex>(idx);
 }
@@ -126,40 +126,42 @@ auto add_pair(PairIndex leftIdx, PairIndex rightIdx) {
   // finally update regular number connections
   auto const leftRegNumIdx = get_outer_regnumidx(left, &Pair::rightIdx);
   auto const rightRegNumIdx = get_outer_regnumidx(right, &Pair::leftIdx);
-  regNumVec[rightRegNumIdx].rightIdx = leftRegNumIdx;
-  regNumVec[leftRegNumIdx].leftIdx = rightRegNumIdx;
+  std::cout << leftRegNumIdx.get() << " " << rightRegNumIdx.get() << '\n';
+  regNumVec[rightRegNumIdx].leftIdx = leftRegNumIdx;
+  regNumVec[leftRegNumIdx].rightIdx = rightRegNumIdx;
 
   return pairIdx;
 }
 
-template <typename Projection>
-auto add_value_to_neighbor(IndexVariant myIdx, Projection proj,
-                           RegNumIndex newIdx) {
+template <typename NeighborIdx, typename IdxBack>
+auto add_value_to_neighbor(IndexVariant myIdx, NeighborIdx neightborIdx,
+                           RegNumIndex newIdx, IdxBack idxBack) {
   auto const &current{regNumVec[get<RegNumIndex>(myIdx)]};
-  auto const neighborIdx = std::invoke(proj, current);
+  auto const neighborIdx = std::invoke(neightborIdx, current);
   if (neighborIdx != invalid_index) {
     auto &neighbor = regNumVec[neighborIdx];
     neighbor.value += current.value;
-    neighbor.rightIdx = newIdx;
+    std::invoke(idxBack, neighbor) = newIdx;
   }
   return neighborIdx;
 }
 
 auto explode_pair(PairIndex p) {
   // the entire exploding pair is replaced with the regular number 0.
+  // note: could probably reuse one of the old regular numbers. But this is ok
   regNumVec.emplace_back(0);
   auto const newIdx = get_last_index(regNumVec);
 
   auto const &pair{pairVec[p]};
   // the pair's left value is added to the first regular number to the left of
   // the exploding pair (if any).
-  auto const leftIdx =
-      add_value_to_neighbor(pair.leftIdx, &RegularNumber::leftIdx, newIdx);
+  auto const leftIdx = add_value_to_neighbor(
+      pair.leftIdx, &RegularNumber::leftIdx, newIdx, &RegularNumber::rightIdx);
 
   // the pair's right value is added to the first regular number to the right of
   // the exploding pair (if any).
-  auto const rightIdx =
-      add_value_to_neighbor(pair.rightIdx, &RegularNumber::rightIdx, newIdx);
+  auto const rightIdx = add_value_to_neighbor(
+      pair.rightIdx, &RegularNumber::rightIdx, newIdx, &RegularNumber::leftIdx);
 
   // finally update regular number connections
   auto &newRegNum = regNumVec[newIdx];
@@ -209,11 +211,38 @@ void print(PairIndex pi) {
   std::cout << ']';
 }
 
+void dumpVecs() {
+  auto pi{0};
+  for (auto const &pair : pairVec) {
+    std::cout << "Pair " << pi++ << ": parent idx: " << pair.parent.get()
+              << ", left " << pair.leftIdx << ", right " << pair.rightIdx
+              << '\n';
+  }
+  auto rni{0};
+  for (auto const &regNum : regNumVec) {
+    std::cout << "Regular number " << rni++ << ": val: " << regNum.value
+              << ", left: " << regNum.leftIdx.get()
+              << ", right: " << regNum.rightIdx.get() << '\n';
+  }
+  rni = 0;
+  while (true) {
+    std::cout << regNumVec[rni].value << ", ";
+    if (regNumVec[rni].rightIdx == invalid_index) {
+      break;
+    }
+    rni = regNumVec[rni].rightIdx;
+  }
+  std::cout << '\n';
+}
+
 int main() {
-  auto const snailFishNumbers{readinputdata<std::string>(  //
-      std::stringstream{testData}                          //
+  auto const snailFishNumbers{
+      // readinputdata<std::string>(  //
+      // std::stringstream{testData}                          //
       // std::ifstream{"input"} //
-      )};
+      std::vector<std::string>{"[0,[1,2]]", "[3,4]"}
+      //)//
+  };
   // WTF this assignment! Poor snailfish kids.
   auto const outerPairIdxs{[&] {
     auto outerPairIdxs{std::vector<PairIndex>{}};
@@ -227,32 +256,25 @@ int main() {
     return outerPairIdxs;
   }()};
 
-  // auto pi{0};
-  // for (auto const &pair : pairVec) {
-  //   std::cout << "Pair " << pi++ << ": parent idx: " << pair.parent.get()
-  //             << ", left " << pair.leftIdx << ", right " << pair.rightIdx
-  //             << '\n';
-  // }
-  // auto rni{0};
-  // for (auto const &regNum : regNumVec) {
-  //   std::cout << "Regular number " << rni++ << ": val: " << regNum.value
-  //             << ", left: " << regNum.leftIdx.get()
-  //             << ", right: " << regNum.rightIdx.get() << '\n';
-  // }
-  // rni = 0;
-  // while (true) {
-  //   std::cout << regNumVec[rni].value << ", ";
-  //   if (regNumVec[rni].rightIdx == invalid_index) {
-  //     break;
-  //   }
-  //   rni = regNumVec[rni].rightIdx;
-  // }
-  // std::cout << '\n';
-
   for (auto outerPairIdx : outerPairIdxs) {
     print(outerPairIdx);
     std::cout << '\n';
   }
+
+  auto const addedIdx{add_pair(outerPairIdxs[0], outerPairIdxs[1])};
+  print(addedIdx);
+  std::cout << '\n';
+  // dumpVecs();
+
+  pairVec[0].rightIdx = explode_pair(PairIndex{1});
+  print(addedIdx);
+  std::cout << '\n';
+  // dumpVecs();
+
+  pairVec[2].leftIdx = split_literal(RegNumIndex{3}, PairIndex{2});
+  print(addedIdx);
+  std::cout << '\n';
+  dumpVecs();
 
   return 0;
 }
